@@ -1,19 +1,84 @@
 const asyncHandler = require('express-async-handler');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+const User = require('../models/userModel');
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
+};
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, emaii, password } = req.body;
+  const { name, email, password } = req.body;
 
-  if (!name || !emaii || !password) {
+  if (!name || !email || !password) {
     return res.status(400).json({
       message: 'Please provide all the required fields',
     });
   }
 
-  res.send('registerUser');
+  // Find if user already exits
+  const userExists = await User.findOne({ email });
+
+  if (userExists) {
+    res.status(400);
+    throw new Error('User already exists');
+  }
+
+  // Hash password
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  // Create user
+  const user = new User({
+    name,
+    email,
+    password: hashedPassword,
+  });
+
+  // Save user
+  await user.save();
+
+  if (user) {
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(500).json({
+      message: 'Something went wrong',
+    });
+  }
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  res.send('loginUser');
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      message: 'Please provide all the required fields',
+    });
+  }
+
+  // Find user
+  const user = await User.findOne({ email });
+
+  if (user && (await bcrypt.compare(password, user.password))) {
+    res.status(200).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(401).json({
+      message: 'Invalid credentials',
+    });
+  }
 });
 
 module.exports = {
