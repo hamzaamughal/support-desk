@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaUser } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { register, reset } from '../features/auth/authSlice';
+import Spinner from '../components/Spinner';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -31,7 +32,7 @@ const Register = () => {
       navigate('/');
     }
     dispatch(reset());
-  }, [isError, isSuccess, message, user, navigate]);
+  }, [isError, isSuccess, message, user, navigate, dispatch]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -50,6 +51,10 @@ const Register = () => {
       console.log(userData);
     }
   };
+
+  if (isLoading) {
+    return <Spinner />;
+  }
 
   return (
     <>
