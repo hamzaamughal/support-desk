@@ -1,53 +1,59 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { FaSignInAlt } from 'react-icons/fa';
-import { useSelector, useDispatch } from 'react-redux';
-import { login, reset } from '../features/auth/authSlice';
-import Spinner from '../components/Spinner';
+import { useState, useEffect } from 'react'
+import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
+import { FaSignInAlt } from 'react-icons/fa'
+import { useSelector, useDispatch } from 'react-redux'
+import { login, reset } from '../features/auth/authSlice'
+import Spinner from '../components/Spinner'
 
-const Login = () => {
+function Login() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-  });
+  })
 
-  const { email, password } = formData;
+  const { email, password } = formData
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   const { user, isLoading, isError, isSuccess, message } = useSelector(
     (state) => state.auth
-  );
+  )
 
   useEffect(() => {
     if (isError) {
-      toast.error(message);
+      toast.error(message)
     }
+
+    // Redirect when logged in
     if (isSuccess || user) {
-      toast.success(message);
-      navigate('/');
+      navigate('/')
     }
-    dispatch(reset());
-  }, [isError, isSuccess, message, user, navigate, dispatch]);
+
+    dispatch(reset())
+  }, [isError, isSuccess, user, message, navigate, dispatch])
 
   const onChange = (e) => {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
-    }));
-  };
+    }))
+  }
 
-  const onSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = (e) => {
+    e.preventDefault()
 
-    const userData = { email, password };
-    dispatch(login(userData));
-  };
+    const userData = {
+      email,
+      password,
+    }
+
+    dispatch(login(userData))
+  }
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spinner />
   }
 
   return (
@@ -58,14 +64,15 @@ const Login = () => {
         </h1>
         <p>Please log in to get support</p>
       </section>
+
       <section className='form'>
         <form onSubmit={onSubmit}>
           <div className='form-group'>
             <input
               type='email'
               className='form-control'
-              name='email'
               id='email'
+              name='email'
               value={email}
               onChange={onChange}
               placeholder='Enter your email'
@@ -76,22 +83,21 @@ const Login = () => {
             <input
               type='password'
               className='form-control'
-              name='password'
               id='password'
+              name='password'
               value={password}
               onChange={onChange}
-              placeholder='Enter your password'
+              placeholder='Enter password'
               required
             />
           </div>
-
           <div className='form-group'>
             <button className='btn btn-block'>Submit</button>
           </div>
         </form>
       </section>
     </>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login
